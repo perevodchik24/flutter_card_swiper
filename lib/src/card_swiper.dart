@@ -45,8 +45,12 @@ class CardSwiper extends StatefulWidget {
   /// direction in which the card gets swiped when triggered by controller, default set to right
   final CardSwiperDirection direction;
 
-  /// if true then user can't swipe card to top or bottom, default set to false
-  final bool disabledVerticalSwipe;
+  /// callback that will be invoked before run swipe animation. Invoke even if
+  /// current swipe direction currently disabled and in contains [disabledDirections]
+  final ValueChanged<CardSwiperDirection>? beforeSwipe;
+
+  /// list of directions that will be disabled to swipe manually or with controller
+  final List<CardSwiperDirection> disabledDirections;
 
   const CardSwiper({
     Key? key,
@@ -59,10 +63,11 @@ class CardSwiper extends StatefulWidget {
     this.initialIndex = 0,
     this.scale = 0.9,
     this.isDisabled = false,
-    this.disabledVerticalSwipe = false,
+    this.disabledDirections = const [],
     this.onTapDisabled,
     this.onSwipe,
     this.onEnd,
+    this.beforeSwipe,
     this.direction = CardSwiperDirection.right,
   })  : assert(
           maxAngle >= 0 && maxAngle <= 360,
@@ -307,8 +312,7 @@ class _CardSwiperState extends State<CardSwiper>
   void _onEndAnimation() {
     if (_left < -widget.threshold || _left > widget.threshold) {
       _swipeHorizontal(context);
-    } else if (!widget.disabledVerticalSwipe &&
-        (_top < -widget.threshold || _top > widget.threshold)) {
+    } else if (_top < -widget.threshold || _top > widget.threshold) {
       _swipeVertical(context);
     } else {
       _goBack(context);
@@ -320,15 +324,23 @@ class _CardSwiperState extends State<CardSwiper>
 
     switch (direction) {
       case CardSwiperDirection.left:
-        _left = -1;
-        _swipeHorizontal(context);
+        if (widget.disabledDirections.contains(CardSwiperDirection.left)) {
+          _goBack(context);
+        } else {
+          _left = -1;
+          _swipeHorizontal(context);
+        }
         break;
       case CardSwiperDirection.right:
-        _left = widget.threshold + 1;
-        _swipeHorizontal(context);
+        if (widget.disabledDirections.contains(CardSwiperDirection.right)) {
+          _goBack(context);
+        } else {
+          _left = widget.threshold + 1;
+          _swipeHorizontal(context);
+        }
         break;
       case CardSwiperDirection.top:
-        if (!widget.disabledVerticalSwipe) {
+        if (widget.disabledDirections.contains(CardSwiperDirection.top)) {
           _goBack(context);
         } else {
           _top = -1;
@@ -336,7 +348,7 @@ class _CardSwiperState extends State<CardSwiper>
         }
         break;
       case CardSwiperDirection.bottom:
-        if (!widget.disabledVerticalSwipe) {
+        if (widget.disabledDirections.contains(CardSwiperDirection.bottom)) {
           _goBack(context);
         } else {
           _top = widget.threshold + 1;
@@ -351,6 +363,19 @@ class _CardSwiperState extends State<CardSwiper>
 
   //moves the card away to the left or right
   void _swipeHorizontal(BuildContext context) {
+    if (_left > widget.threshold ||
+        _left == 0 && widget.direction == CardSwiperDirection.right) {
+      detectedDirection = CardSwiperDirection.right;
+    } else {
+      detectedDirection = CardSwiperDirection.left;
+    }
+
+    widget.beforeSwipe?.call(detectedDirection);
+
+    if(widget.disabledDirections.contains(detectedDirection)) {
+      return;
+    }
+
     _leftAnimation = Tween<double>(
       begin: _left,
       end: (_left == 0 && widget.direction == CardSwiperDirection.right) ||
@@ -372,16 +397,23 @@ class _CardSwiperState extends State<CardSwiper>
     ).animate(_animationController);
 
     _swipeType = SwipeType.swipe;
-    if (_left > widget.threshold ||
-        _left == 0 && widget.direction == CardSwiperDirection.right) {
-      detectedDirection = CardSwiperDirection.right;
-    } else {
-      detectedDirection = CardSwiperDirection.left;
-    }
   }
 
   //moves the card away to the top or bottom
   void _swipeVertical(BuildContext context) {
+    if (_top > widget.threshold ||
+        _top == 0 && widget.direction == CardSwiperDirection.bottom) {
+      detectedDirection = CardSwiperDirection.bottom;
+    } else {
+      detectedDirection = CardSwiperDirection.top;
+    }
+
+    widget.beforeSwipe?.call(detectedDirection);
+
+    if(widget.disabledDirections.contains(detectedDirection)) {
+      return;
+    }
+
     _leftAnimation = Tween<double>(
       begin: _left,
       end: _left + _left,
@@ -403,12 +435,6 @@ class _CardSwiperState extends State<CardSwiper>
     ).animate(_animationController);
 
     _swipeType = SwipeType.swipe;
-    if (_top > widget.threshold ||
-        _top == 0 && widget.direction == CardSwiperDirection.bottom) {
-      detectedDirection = CardSwiperDirection.bottom;
-    } else {
-      detectedDirection = CardSwiperDirection.top;
-    }
   }
 
   //moves the card back to starting position
