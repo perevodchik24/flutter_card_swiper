@@ -42,6 +42,9 @@ class CardSwiper extends StatefulWidget {
   /// direction in which the card gets swiped when triggered by controller, default set to right
   final CardSwiperDirection direction;
 
+  /// if true then user can't swipe card to top or bottom, default set to false
+  final bool disabledVerticalSwipe;
+
   const CardSwiper({
     Key? key,
     required this.cards,
@@ -52,6 +55,7 @@ class CardSwiper extends StatefulWidget {
     this.threshold = 50,
     this.scale = 0.9,
     this.isDisabled = false,
+    this.disabledVerticalSwipe = false,
     this.onTapDisabled,
     this.onSwipe,
     this.onEnd,
@@ -296,7 +300,7 @@ class _CardSwiperState extends State<CardSwiper>
   void _onEndAnimation() {
     if (_left < -widget.threshold || _left > widget.threshold) {
       _swipeHorizontal(context);
-    } else if (_top < -widget.threshold || _top > widget.threshold) {
+    } else if (!widget.disabledVerticalSwipe && (_top < -widget.threshold || _top > widget.threshold)) {
       _swipeVertical(context);
     } else {
       _goBack(context);
@@ -316,12 +320,20 @@ class _CardSwiperState extends State<CardSwiper>
         _swipeHorizontal(context);
         break;
       case CardSwiperDirection.top:
-        _top = -1;
-        _swipeVertical(context);
+        if(!widget.disabledVerticalSwipe) {
+          _goBack(context);
+        } else {
+          _top = -1;
+          _swipeVertical(context);
+        }
         break;
       case CardSwiperDirection.bottom:
-        _top = widget.threshold + 1;
-        _swipeVertical(context);
+        if(!widget.disabledVerticalSwipe) {
+          _goBack(context);
+        } else {
+          _top = widget.threshold + 1;
+          _swipeVertical(context);
+        }
         break;
       default:
         break;
