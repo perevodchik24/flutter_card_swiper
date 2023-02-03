@@ -24,6 +24,9 @@ class CardSwiper extends StatefulWidget {
   /// threshold from which the card is swiped away
   final int threshold;
 
+  /// index of the first item when we create swiper
+  final int initialIndex;
+
   /// scale of the card that is behind the front card
   final double scale;
 
@@ -53,6 +56,7 @@ class CardSwiper extends StatefulWidget {
     this.duration = const Duration(milliseconds: 200),
     this.maxAngle = 30,
     this.threshold = 50,
+    this.initialIndex = 0,
     this.scale = 0.9,
     this.isDisabled = false,
     this.disabledVerticalSwipe = false,
@@ -113,6 +117,8 @@ class _CardSwiperState extends State<CardSwiper>
   @override
   void initState() {
     super.initState();
+
+    _currentIndex = widget.initialIndex;
 
     widget.controller?.addListener(_controllerListener);
 
