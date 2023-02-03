@@ -373,6 +373,7 @@ class _CardSwiperState extends State<CardSwiper>
     widget.beforeSwipe?.call(detectedDirection);
 
     if(widget.disabledDirections.contains(detectedDirection)) {
+      _goBack(context);
       return;
     }
 
@@ -411,6 +412,7 @@ class _CardSwiperState extends State<CardSwiper>
     widget.beforeSwipe?.call(detectedDirection);
 
     if(widget.disabledDirections.contains(detectedDirection)) {
+      _goBack(context);
       return;
     }
 
