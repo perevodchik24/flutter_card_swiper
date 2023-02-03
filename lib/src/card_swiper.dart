@@ -107,6 +107,7 @@ class _CardSwiperState extends State<CardSwiper>
   double get _maxAngle => widget.maxAngle * (pi / 180);
 
   bool get _isLastCard => _currentIndex == widget.cards.length - 1;
+
   int get _nextCardIndex => _isLastCard ? 0 : _currentIndex + 1;
 
   @override
@@ -300,7 +301,8 @@ class _CardSwiperState extends State<CardSwiper>
   void _onEndAnimation() {
     if (_left < -widget.threshold || _left > widget.threshold) {
       _swipeHorizontal(context);
-    } else if (!widget.disabledVerticalSwipe && (_top < -widget.threshold || _top > widget.threshold)) {
+    } else if (!widget.disabledVerticalSwipe &&
+        (_top < -widget.threshold || _top > widget.threshold)) {
       _swipeVertical(context);
     } else {
       _goBack(context);
@@ -320,7 +322,7 @@ class _CardSwiperState extends State<CardSwiper>
         _swipeHorizontal(context);
         break;
       case CardSwiperDirection.top:
-        if(!widget.disabledVerticalSwipe) {
+        if (!widget.disabledVerticalSwipe) {
           _goBack(context);
         } else {
           _top = -1;
@@ -328,7 +330,7 @@ class _CardSwiperState extends State<CardSwiper>
         }
         break;
       case CardSwiperDirection.bottom:
-        if(!widget.disabledVerticalSwipe) {
+        if (!widget.disabledVerticalSwipe) {
           _goBack(context);
         } else {
           _top = widget.threshold + 1;
