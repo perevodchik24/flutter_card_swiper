@@ -52,6 +52,9 @@ class CardSwiper extends StatefulWidget {
   /// list of directions that will be disabled to swipe manually or with controller
   final List<CardSwiperDirection> disabledDirections;
 
+  /// notifier that would be fired when user drag the item
+  final ValueChanged<Offset>? onDrag;
+
   const CardSwiper({
     Key? key,
     required this.cards,
@@ -69,6 +72,7 @@ class CardSwiper extends StatefulWidget {
     this.onEnd,
     this.beforeSwipe,
     this.direction = CardSwiperDirection.right,
+    this.onDrag,
   })  : assert(
           maxAngle >= 0 && maxAngle <= 360,
           'maxAngle must be between 0 and 360',
@@ -199,6 +203,9 @@ class _CardSwiperState extends State<CardSwiper>
               _calculateAngle();
               _calculateScale();
               _calculateDifference();
+
+              final offset = Offset(_left, _top);
+              widget.onDrag?.call(offset);
             });
           }
         },
@@ -284,6 +291,8 @@ class _CardSwiperState extends State<CardSwiper>
         _scale = widget.scale;
         _difference = 40;
         _swipeType = SwipeType.none;
+
+        widget.onDrag?.call(Offset.zero);
       });
     }
   }
@@ -380,7 +389,7 @@ class _CardSwiperState extends State<CardSwiper>
     _leftAnimation = Tween<double>(
       begin: _left,
       end: (_left == 0 && widget.direction == CardSwiperDirection.right) ||
-              _left > widget.threshold
+          _left > widget.threshold
           ? MediaQuery.of(context).size.width
           : -MediaQuery.of(context).size.width,
     ).animate(_animationController);
@@ -423,7 +432,7 @@ class _CardSwiperState extends State<CardSwiper>
     _topAnimation = Tween<double>(
       begin: _top,
       end: (_top == 0 && widget.direction == CardSwiperDirection.bottom) ||
-              _top > widget.threshold
+          _top > widget.threshold
           ? MediaQuery.of(context).size.height
           : -MediaQuery.of(context).size.height,
     ).animate(_animationController);
