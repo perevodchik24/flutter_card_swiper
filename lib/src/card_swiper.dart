@@ -195,16 +195,22 @@ class _CardSwiperState extends State<CardSwiper>
           }
         },
         onPanUpdate: (tapInfo) {
-          if (!widget.isDisabled) {
-            setState(() {
-              _left += tapInfo.delta.dx;
-              _top += tapInfo.delta.dy;
-              _total = _left + _top;
-              _calculateAngle();
-              _calculateScale();
-              _calculateDifference();
-            });
+          if (widget.isDisabled) {
+            return;
           }
+
+          setState(() {
+            _left += tapInfo.delta.dx;
+            _top += tapInfo.delta.dy;
+            _total = _left + _top;
+            _calculateAngle();
+            _calculateScale();
+            _calculateDifference();
+          });
+
+
+          final offset = Offset(_left, _top);
+          widget.onDrag?.call(offset);
         },
         onPanEnd: (tapInfo) {
           if (!widget.isDisabled) {
