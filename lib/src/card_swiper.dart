@@ -95,8 +95,7 @@ class CardSwiper extends StatefulWidget {
   State createState() => _CardSwiperState();
 }
 
-class _CardSwiperState extends State<CardSwiper>
-    with SingleTickerProviderStateMixin {
+class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
   double _left = 0;
   double _top = 0;
   double _total = 0;
@@ -107,9 +106,11 @@ class _CardSwiperState extends State<CardSwiper>
   int _currentIndex = 0;
 
   SwipeType _swipeType = SwipeType.none;
-  bool _tapOnTop = false; //position of starting drag point on card
+  bool _tapOnTop = false;
 
   late AnimationController _animationController;
+  late AnimationController _returnController;
+  late Animation<double> _returnAnimation;
   late Animation<double> _leftAnimation;
   late Animation<double> _topAnimation;
   late Animation<double> _scaleAnimation;
@@ -137,13 +138,25 @@ class _CardSwiperState extends State<CardSwiper>
     )
       ..addListener(_animationListener)
       ..addStatusListener(_animationStatusListener);
+
+    _returnController = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    )
+      ..addListener(_returnListener);
+    _returnAnimation = Tween<double>(
+      begin: widget.threshold.toDouble(),
+      end: 0,
+    ).animate(_returnController);
   }
 
   @override
   void dispose() {
-    super.dispose();
     _animationController.dispose();
+    _returnController.dispose();
     widget.controller?.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -208,7 +221,6 @@ class _CardSwiperState extends State<CardSwiper>
             _calculateDifference();
           });
 
-
           final offset = Offset(_left, _top);
           widget.onDrag?.call(offset);
         },
@@ -272,7 +284,11 @@ class _CardSwiperState extends State<CardSwiper>
     }
     if (_animationController.status == AnimationStatus.forward ||
         _animationController.status == AnimationStatus.reverse) {
-      final offset = Offset(_leftAnimation.value, _topAnimation.value);
+      final offset = Offset(
+        min(_leftAnimation.value, widget.threshold.toDouble()),
+        min(_topAnimation.value, widget.threshold.toDouble()),
+      );
+
       widget.onDrag?.call(offset);
     }
   }
@@ -290,6 +306,7 @@ class _CardSwiperState extends State<CardSwiper>
           } else {
             _currentIndex++;
           }
+          _returnController.forward();
         }
         _animationController.reset();
         _left = 0;
@@ -474,5 +491,18 @@ class _CardSwiperState extends State<CardSwiper>
     ).animate(_animationController);
 
     _swipeType = SwipeType.back;
+  }
+
+  void _returnListener() {
+    final value = _returnAnimation.value;
+    if(value != widget.threshold.toDouble()) {
+      final offset = Offset(value, value);
+      widget.onDrag?.call(offset);
+    }
+
+    final status = _returnController.status;
+    if (status == AnimationStatus.completed) {
+      _returnController.value = 0;
+    }
   }
 }
