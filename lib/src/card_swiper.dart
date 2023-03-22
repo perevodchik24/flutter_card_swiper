@@ -306,7 +306,7 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
           } else {
             _currentIndex++;
           }
-          _returnController.forward();
+          // _returnController.forward();
         }
         _animationController.reset();
         _left = 0;
