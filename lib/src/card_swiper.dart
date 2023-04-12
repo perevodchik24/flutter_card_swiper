@@ -55,24 +55,27 @@ class CardSwiper extends StatefulWidget {
   /// notifier that would be fired when user drag the item
   final ValueChanged<Offset>? onDrag;
 
+  final ValueChanged<int>? onItemIndexChange;
+
   const CardSwiper({
     Key? key,
     required this.cards,
-    this.controller,
-    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-    this.duration = const Duration(milliseconds: 200),
     this.maxAngle = 30,
     this.threshold = 50,
     this.initialIndex = 0,
     this.scale = 0.9,
     this.isDisabled = false,
     this.disabledDirections = const [],
+    this.direction = CardSwiperDirection.right,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+    this.duration = const Duration(milliseconds: 200),
+    this.controller,
     this.onTapDisabled,
     this.onSwipe,
     this.onEnd,
     this.beforeSwipe,
-    this.direction = CardSwiperDirection.right,
     this.onDrag,
+    this.onItemIndexChange,
   })  : assert(
           maxAngle >= 0 && maxAngle <= 360,
           'maxAngle must be between 0 and 360',
@@ -242,6 +245,7 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
       } else {
         _currentIndex = 0;
       }
+      widget.onItemIndexChange?.call(_currentIndex);
     }
 
     if(_currentIndex < 0) {
@@ -318,7 +322,7 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
           } else {
             _currentIndex++;
           }
-          // _returnController.forward();
+          widget.onItemIndexChange?.call(_currentIndex);
         }
         _animationController.reset();
         _left = 0;
