@@ -236,6 +236,18 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
   }
 
   Widget _backItem(BoxConstraints constraints) {
+    if(_currentIndex > widget.cards.length - 1) {
+      if(widget.cards.isNotEmpty) {
+        _currentIndex = widget.cards.length - 1;
+      } else {
+        _currentIndex = 0;
+      }
+    }
+
+    if(_currentIndex < 0) {
+      return const SizedBox.shrink();
+    }
+
     return Positioned(
       top: _difference,
       left: 0,
