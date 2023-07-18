@@ -155,6 +155,7 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    widget.controller?.addListener(_controllerListener);
     _animationController.dispose();
     _returnController.dispose();
 
