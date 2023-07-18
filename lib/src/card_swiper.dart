@@ -106,7 +106,7 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
   late double _scale = widget.scale;
   double _difference = 40;
 
-  int _currentIndex = 0;
+  int _currentCardIndex = 0;
 
   SwipeType _swipeType = SwipeType.none;
   bool _tapOnTop = false;
@@ -120,6 +120,13 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
   late Animation<double> _differenceAnimation;
 
   CardSwiperDirection detectedDirection = CardSwiperDirection.none;
+
+  int get _currentIndex => _currentCardIndex;
+
+  set _currentIndex(int value) {
+    _currentCardIndex = value;
+    widget.onItemIndexChange?.call(value);
+  }
 
   double get _maxAngle => widget.maxAngle * (pi / 180);
 
@@ -163,6 +170,15 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
   }
 
   @override
+  void didUpdateWidget(covariant CardSwiper oldWidget) {
+    if(widget.cards.length != oldWidget.cards.length) {
+      _onCurrentChanged();
+    }
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -183,6 +199,10 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
         );
       },
     );
+  }
+
+  void _onCurrentChanged() {
+    widget.onItemIndexChange?.call(_currentIndex);
   }
 
   Widget _frontItem(BoxConstraints constraints) {
@@ -245,7 +265,6 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
       } else {
         _currentIndex = 0;
       }
-      widget.onItemIndexChange?.call(_currentIndex);
     }
 
     if(_currentIndex < 0) {
@@ -322,7 +341,6 @@ class _CardSwiperState extends State<CardSwiper> with TickerProviderStateMixin {
           } else {
             _currentIndex++;
           }
-          widget.onItemIndexChange?.call(_currentIndex);
         }
         _animationController.reset();
         _left = 0;
